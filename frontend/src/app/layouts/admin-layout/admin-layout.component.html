@@ -1,0 +1,146 @@
+<div class="admin-container">
+
+  <div
+    class="overlay"
+    *ngIf="sidebarOpen"
+    (click)="closeSidebar()">
+  </div>
+
+  <aside
+    class="sidebar"
+    [class.open]="sidebarOpen">
+
+    <div class="brand">
+
+      <div class="brand-icon">
+        <lucide-icon
+          [img]="ShieldIcon"
+          [size]="24">
+        </lucide-icon>
+      </div>
+
+      <div>
+        <strong>UserManager</strong>
+        <small>Administration</small>
+      </div>
+
+    </div>
+
+    <div class="menu-label">
+      MANAGEMENT
+    </div>
+
+    <nav class="navigation">
+
+      <a
+        routerLink="/admin/dashboard"
+        routerLinkActive="active"
+        (click)="closeSidebar()"
+        data-testid="nav-dashboard">
+
+        <lucide-icon
+          [img]="DashboardIcon"
+          [size]="20">
+        </lucide-icon>
+
+        Dashboard
+
+      </a>
+
+      <a
+        routerLink="/admin/users"
+        routerLinkActive="active"
+        (click)="closeSidebar()"
+        data-testid="nav-users">
+
+        <lucide-icon
+          [img]="UsersIcon"
+          [size]="20">
+        </lucide-icon>
+
+        Users
+
+      </a>
+
+    </nav>
+
+    <div class="sidebar-bottom">
+
+      <div class="account">
+
+        <div class="avatar">
+          {{ session?.name?.charAt(0) || 'A' }}
+        </div>
+
+        <div class="account-info">
+          <strong>{{ session?.name }}</strong>
+          <small>{{ session?.role }}</small>
+        </div>
+
+      </div>
+
+      <button
+        class="logout"
+        data-testid="logout-button"
+        (click)="logout()">
+
+        <lucide-icon
+          [img]="LogoutIcon"
+          [size]="19">
+        </lucide-icon>
+
+        Sign out
+
+      </button>
+
+    </div>
+
+  </aside>
+
+  <div class="main-container">
+
+    <header class="topbar">
+
+      <div class="header-left">
+
+        <button
+          class="menu-button"
+          aria-label="Open navigation"
+          (click)="toggleSidebar()">
+
+          <lucide-icon
+            [img]="MenuIcon"
+            [size]="24">
+          </lucide-icon>
+
+        </button>
+
+        <span>Administration Portal</span>
+
+      </div>
+
+      <div class="header-user">
+
+        <div class="avatar small">
+          {{ session?.name?.charAt(0) || 'A' }}
+        </div>
+
+        <div class="header-user-info">
+          <strong>{{ session?.name }}</strong>
+          <small>Administrator</small>
+        </div>
+
+      </div>
+
+    </header>
+
+    <main class="page-content">
+
+      <router-outlet></router-outlet>
+
+    </main>
+
+  </div>
+
+</div>
+

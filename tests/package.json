@@ -1,0 +1,25 @@
+{
+  "name": "tests",
+  "version": "1.0.0",
+  "description": "Pruebas automatizadas de UserManager",
+  "main": "index.js",
+  "scripts": {
+    "test": "npm run test:all",
+    "test:backend": "jest --runInBand --verbose --colors",
+    "test:frontend": "playwright test --workers=1",
+    "test:all": "npm run test:backend && npm run test:frontend",
+    "report:backend": "start jest-report/index.html",
+    "report:frontend": "playwright show-report"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "@playwright/test": "^1.65.1",
+    "jest": "^30.5.2",
+    "jest-html-reporters": "^3.1.7",
+    "jest-junit": "^17.0.0",
+    "supertest": "^7.3.2"
+  }
+}

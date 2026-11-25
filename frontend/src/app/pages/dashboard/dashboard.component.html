@@ -1,0 +1,245 @@
+<div class="dashboard">
+
+  <div class="page-heading">
+
+    <div>
+      <h1>Panel de control</h1>
+      <p>Resumen de tu sistema de gestión de usuarios.</p>
+    </div>
+
+    <button
+      class="refresh-button"
+      [disabled]="loading"
+      (click)="loadUsers()">
+
+      <lucide-icon
+        [img]="RefreshIcon"
+        [size]="17">
+      </lucide-icon>
+
+      Actualizar
+
+    </button>
+
+  </div>
+
+  <section class="welcome-banner">
+
+    <div>
+
+      <span>PORTAL DE ADMINISTRACIÓN</span>
+
+      <h2>Bienvenido, {{ adminName }}</h2>
+
+      <p>
+        Gestiona tus usuarios, permisos y
+        estados de cuenta desde un solo lugar.
+      </p>
+
+      <a routerLink="/admin/users">
+
+        Gestionar usuarios
+
+        <lucide-icon
+          [img]="ArrowIcon"
+          [size]="17">
+        </lucide-icon>
+
+      </a>
+
+    </div>
+
+    <lucide-icon
+      class="banner-icon"
+      [img]="AdminIcon"
+      [size]="130">
+    </lucide-icon>
+
+  </section>
+
+  <div
+    class="error-message"
+    *ngIf="errorMessage">
+
+    {{ errorMessage }}
+
+  </div>
+
+  <p *ngIf="loading">
+    Cargando panel de control...
+  </p>
+
+  <section
+    class="stats-grid"
+    *ngIf="!loading && !errorMessage">
+
+    <article class="stat-card">
+
+      <div class="stat-icon blue">
+        <lucide-icon
+          [img]="UsersIcon"
+          [size]="24">
+        </lucide-icon>
+      </div>
+
+      <p>Total de usuarios</p>
+
+      <h2 data-testid="total-users">
+        {{ totalUsers }}
+      </h2>
+
+      <small>Cuentas registradas</small>
+
+    </article>
+
+    <article class="stat-card">
+
+      <div class="stat-icon green">
+        <lucide-icon
+          [img]="ActiveIcon"
+          [size]="24">
+        </lucide-icon>
+      </div>
+
+      <p>Usuarios activos</p>
+
+      <h2 data-testid="active-users">
+        {{ activeUsers }}
+      </h2>
+
+      <small>Cuentas habilitadas</small>
+
+    </article>
+
+    <article class="stat-card">
+
+      <div class="stat-icon red">
+        <lucide-icon
+          [img]="InactiveIcon"
+          [size]="24">
+        </lucide-icon>
+      </div>
+
+      <p>Usuarios inactivos</p>
+
+      <h2 data-testid="inactive-users">
+        {{ inactiveUsers }}
+      </h2>
+
+      <small>Cuentas deshabilitadas</small>
+
+    </article>
+
+    <article class="stat-card">
+
+      <div class="stat-icon purple">
+        <lucide-icon
+          [img]="AdminIcon"
+          [size]="24">
+        </lucide-icon>
+      </div>
+
+      <p>Administradores</p>
+
+      <h2 data-testid="admin-users">
+        {{ adminUsers }}
+      </h2>
+
+      <small>Cuentas con privilegios</small>
+
+    </article>
+
+  </section>
+
+  <div
+    class="details-grid"
+    *ngIf="!loading && !errorMessage">
+
+    <section class="panel">
+
+      <h3>Estado de los usuarios</h3>
+
+      <p>Distribución de las cuentas registradas.</p>
+
+      <div
+        class="donut"
+        [style.background]="
+          'conic-gradient(#22c55e 0% ' +
+          activePercentage +
+          '%, #e2e8f0 ' +
+          activePercentage +
+          '% 100%)'
+        ">
+
+        <div class="donut-center">
+          <strong>{{ activePercentage }}%</strong>
+          <small>Activos</small>
+        </div>
+
+      </div>
+
+      <div class="legend">
+
+        <div>
+          <span class="dot green-dot"></span>
+          Activos
+          <strong>{{ activeUsers }}</strong>
+        </div>
+
+        <div>
+          <span class="dot gray-dot"></span>
+          Inactivos
+          <strong>{{ inactiveUsers }}</strong>
+        </div>
+
+      </div>
+
+    </section>
+
+    <section class="panel recent-panel">
+
+      <div class="panel-heading">
+
+        <div>
+          <h3>Usuarios recientes</h3>
+          <p>Últimas cuentas registradas.</p>
+        </div>
+
+        <a routerLink="/admin/users">
+          Ver todos
+        </a>
+
+      </div>
+
+      <div
+        class="recent-user"
+        *ngFor="let user of recentUsers">
+
+        <div class="user-avatar">
+          {{ user.name.charAt(0).toUpperCase() }}
+        </div>
+
+        <div class="user-info">
+          <strong>{{ user.name }}</strong>
+          <small>{{ user.email }}</small>
+        </div>
+
+        <span
+          class="status"
+          [class.inactive]="!user.active">
+
+          {{ user.active ? 'Activo' : 'Inactivo' }}
+
+        </span>
+
+      </div>
+
+      <p *ngIf="recentUsers.length === 0">
+        No hay usuarios registrados.
+      </p>
+
+    </section>
+
+  </div>
+
+</div>

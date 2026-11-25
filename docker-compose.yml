@@ -1,0 +1,58 @@
+services:
+
+  backend:
+    container_name: usermanager-backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+
+    restart: unless-stopped
+
+    environment:
+      JWT_SECRET: ${JWT_SECRET}
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      SPRING_DATASOURCE_URL: jdbc:sqlite:/app/database/usermanager.db
+
+    volumes:
+      - ./database:/app/database
+      - backend-logs:/app/logs
+
+    expose:
+      - "8080"
+
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+    networks:
+      - usermanager-network
+
+  frontend:
+    container_name: usermanager-frontend
+
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+
+    restart: unless-stopped
+
+    ports:
+      - "${FRONTEND_PORT:-80}:80"
+
+    depends_on:
+      backend:
+        condition: service_healthy
+
+    networks:
+      - usermanager-network
+
+volumes:
+  backend-logs:
+
+networks:
+  usermanager-network:
+    driver: bridge

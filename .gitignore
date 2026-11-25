@@ -1,0 +1,36 @@
+# Variables de entorno
+.env
+.env.*
+!.env.example
+
+# Bases de datos SQLite
+*.db
+*.db-wal
+*.db-shm
+*.db-journal
+
+# Dependencias
+node_modules/
+
+# Archivos compilados
+target/
+dist/
+.angular/
+
+# Logs
+logs/
+*.log
+
+# Reportes de pruebas
+jest-report/
+playwright-report/
+test-results/
+coverage/
+
+# Credenciales AWS
+*.pem
+*.key
+
+# IDE
+.idea/
+.vscode/

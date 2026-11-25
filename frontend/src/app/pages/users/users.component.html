@@ -1,0 +1,644 @@
+<div class="users-page">
+
+  <div class="page-heading">
+
+    <div>
+      <h1>Administración de usuarios</h1>
+      <p>Gestiona los usuarios registrados y sus permisos.</p>
+    </div>
+
+    <button
+      class="btn primary"
+      data-testid="create-user"
+      (click)="openCreateModal()">
+
+      <lucide-icon [img]="AddIcon" [size]="19">
+      </lucide-icon>
+
+      Nuevo usuario
+
+    </button>
+
+  </div>
+
+  <!-- NOTIFICACIONES -->
+
+  <div
+    class="notification success"
+    role="status"
+    data-testid="success-message"
+    *ngIf="successMessage">
+
+    <lucide-icon [img]="SuccessIcon" [size]="20">
+    </lucide-icon>
+
+    {{ successMessage }}
+
+  </div>
+
+  <div
+    class="notification error"
+    role="alert"
+    *ngIf="errorMessage">
+
+    <lucide-icon [img]="ErrorIcon" [size]="20">
+    </lucide-icon>
+
+    {{ errorMessage }}
+
+  </div>
+
+  <section class="table-card">
+
+    <div class="table-heading">
+
+      <div>
+        <h2>Todos los usuarios</h2>
+        <p>{{ users.length }} cuentas registradas</p>
+      </div>
+
+      <button
+        class="btn secondary"
+        [disabled]="loading"
+        (click)="loadUsers()">
+
+        <lucide-icon [img]="RefreshIcon" [size]="17">
+        </lucide-icon>
+
+        Actualizar
+
+      </button>
+
+    </div>
+
+    <!-- FILTROS -->
+
+    <div class="filters">
+
+      <div class="search-box">
+
+        <lucide-icon [img]="SearchIcon" [size]="19">
+        </lucide-icon>
+
+        <input
+          type="text"
+          placeholder="Buscar usuarios..."
+          data-testid="search-users"
+          [(ngModel)]="searchTerm"
+          (ngModelChange)="resetPage()">
+
+      </div>
+
+      <select
+        data-testid="role-filter"
+        [(ngModel)]="roleFilter"
+        (ngModelChange)="resetPage()">
+
+        <option value="ALL">Todos los roles</option>
+        <option value="ADMIN">Administrador</option>
+        <option value="USER">Usuario</option>
+
+      </select>
+
+      <select
+        data-testid="status-filter"
+        [(ngModel)]="statusFilter"
+        (ngModelChange)="resetPage()">
+
+        <option value="ALL">Todos los estados</option>
+        <option value="ACTIVE">Activo</option>
+        <option value="INACTIVE">Inactivo</option>
+
+      </select>
+
+    </div>
+
+    <div class="empty-state" *ngIf="loading">
+      Cargando usuarios...
+    </div>
+
+    <!-- TABLA DE USUARIOS -->
+
+    <div class="table-wrapper" *ngIf="!loading">
+
+      <table data-testid="users-table">
+
+        <thead>
+
+          <tr>
+            <th>Usuario</th>
+            <th>Teléfono</th>
+            <th>Rol</th>
+            <th>Estado</th>
+            <th>Fecha de registro</th>
+            <th>Acciones</th>
+          </tr>
+
+        </thead>
+
+        <tbody>
+
+          <tr
+            *ngFor="let user of paginatedUsers"
+            [attr.data-testid]="'user-row-' + user.id">
+
+            <td>
+
+              <div class="user-cell">
+
+                <div class="avatar">
+                  {{ user.name.charAt(0).toUpperCase() }}
+                </div>
+
+                <div>
+
+                  <strong>{{ user.name }}</strong>
+
+                  <small>{{ user.email }}</small>
+
+                </div>
+
+              </div>
+
+            </td>
+
+            <td>{{ user.phone }}</td>
+
+            <td>
+
+              <span
+                class="role-badge"
+                [class.admin]="user.role === 'ADMIN'">
+
+                {{ user.role === 'ADMIN'
+                    ? 'Administrador'
+                    : 'Usuario' }}
+
+              </span>
+
+            </td>
+
+            <td>
+
+              <span
+                class="status-badge"
+                [class.inactive]="!user.active">
+
+                <span class="status-dot"></span>
+
+                {{ user.active ? 'Activo' : 'Inactivo' }}
+
+              </span>
+
+            </td>
+
+            <td>
+              {{ user.createdAt | date:'dd/MM/yyyy' }}
+            </td>
+
+            <td>
+
+              <div class="actions">
+
+                <button
+                  class="icon-button edit"
+                  title="Editar usuario"
+                  aria-label="Editar usuario"
+                  [attr.data-testid]="'edit-user-' + user.id"
+                  (click)="openEditModal(user)">
+
+                  <lucide-icon [img]="EditIcon" [size]="17">
+                  </lucide-icon>
+
+                </button>
+
+                <button
+                  class="icon-button power"
+                  [class.disabled-user]="!user.active"
+                  [disabled]="user.id === currentUserId"
+                  [title]="user.active ? 'Desactivar' : 'Activar'"
+                  [attr.aria-label]="user.active
+                    ? 'Desactivar usuario'
+                    : 'Activar usuario'"
+                  [attr.data-testid]="'status-user-' + user.id"
+                  (click)="openStatusModal(user)">
+
+                  <lucide-icon [img]="PowerIcon" [size]="17">
+                  </lucide-icon>
+
+                </button>
+
+                <button
+                  class="icon-button delete"
+                  title="Eliminar usuario"
+                  aria-label="Eliminar usuario"
+                  [disabled]="user.id === currentUserId"
+                  [attr.data-testid]="'delete-user-' + user.id"
+                  (click)="openDeleteModal(user)">
+
+                  <lucide-icon [img]="DeleteIcon" [size]="17">
+                  </lucide-icon>
+
+                </button>
+
+              </div>
+
+            </td>
+
+          </tr>
+
+        </tbody>
+
+      </table>
+
+      <div
+        class="empty-state"
+        *ngIf="filteredUsers.length === 0 && !errorMessage">
+
+        <lucide-icon [img]="UsersIcon" [size]="40">
+        </lucide-icon>
+
+        <h3>No se encontraron usuarios</h3>
+        <p>Intenta cambiar la búsqueda o los filtros.</p>
+
+      </div>
+
+    </div>
+
+    <!-- PAGINACIÓN -->
+
+    <div class="pagination">
+
+      <span>
+        {{ filteredUsers.length }} resultados
+      </span>
+
+      <div class="pagination-controls">
+
+        <button
+          class="btn secondary"
+          aria-label="Página anterior"
+          [disabled]="currentPage === 1"
+          (click)="previousPage()">
+
+          <lucide-icon [img]="PreviousIcon" [size]="17">
+          </lucide-icon>
+
+        </button>
+
+        <span>
+          Página {{ currentPage }} de {{ totalPages }}
+        </span>
+
+        <button
+          class="btn secondary"
+          aria-label="Página siguiente"
+          [disabled]="currentPage >= totalPages"
+          (click)="nextPage()">
+
+          <lucide-icon [img]="NextIcon" [size]="17">
+          </lucide-icon>
+
+        </button>
+
+      </div>
+
+    </div>
+
+  </section>
+
+</div>
+
+<!-- MODAL DE REGISTRO Y EDICIÓN -->
+
+<div class="modal-overlay" *ngIf="showModal">
+
+  <section
+    class="modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="user-modal-title"
+    data-testid="user-modal">
+
+    <div class="modal-header">
+
+      <div>
+
+        <h2 id="user-modal-title">
+          {{ editingUser
+              ? 'Editar usuario'
+              : 'Registrar usuario' }}
+        </h2>
+
+        <p>Completa la información de la cuenta.</p>
+
+      </div>
+
+      <button
+        class="icon-button"
+        aria-label="Cerrar"
+        [disabled]="saving"
+        (click)="closeModal()">
+
+        <lucide-icon [img]="CloseIcon" [size]="22">
+        </lucide-icon>
+
+      </button>
+
+    </div>
+
+    <form
+      [formGroup]="userForm"
+      (ngSubmit)="saveUser()"
+      novalidate>
+
+      <div class="modal-body">
+
+        <!-- NOMBRE -->
+
+        <div class="form-group">
+
+          <label for="user-name">Nombre completo</label>
+
+          <input
+            id="user-name"
+            type="text"
+            formControlName="name"
+            data-testid="user-name"
+            placeholder="Ingresa el nombre completo">
+
+          <small
+            class="field-error"
+            *ngIf="userForm.controls.name.invalid &&
+                   userForm.controls.name.touched">
+
+            El nombre debe contener entre 2 y 50 caracteres.
+
+          </small>
+
+        </div>
+
+        <!-- CORREO -->
+
+        <div class="form-group">
+
+          <label for="user-email">Correo electrónico</label>
+
+          <input
+            id="user-email"
+            type="email"
+            formControlName="email"
+            data-testid="user-email"
+            placeholder="Ingresa el correo electrónico">
+
+          <small
+            class="field-error"
+            *ngIf="userForm.controls.email.invalid &&
+                   userForm.controls.email.touched">
+
+            Ingresa un correo válido de máximo 50 caracteres.
+
+          </small>
+
+        </div>
+
+        <!-- TELÉFONO -->
+
+        <div class="form-group">
+
+          <label for="user-phone">Número de teléfono</label>
+
+          <input
+            id="user-phone"
+            type="tel"
+            formControlName="phone"
+            data-testid="user-phone"
+            placeholder="Ingresa 10 dígitos">
+
+          <small
+            class="field-error"
+            *ngIf="userForm.controls.phone.invalid &&
+                   userForm.controls.phone.touched">
+
+            El teléfono debe contener exactamente 10 dígitos.
+
+          </small>
+
+        </div>
+
+        <!-- CONTRASEÑA -->
+
+        <div class="form-group">
+
+          <label for="user-password">Contraseña</label>
+
+          <div class="password-wrapper">
+
+            <input
+              id="user-password"
+              [type]="showPassword ? 'text' : 'password'"
+              formControlName="password"
+              data-testid="user-password"
+              autocomplete="new-password"
+              placeholder="Ingresa la contraseña">
+
+            <button
+              type="button"
+              class="password-toggle"
+              [attr.aria-label]="showPassword
+                ? 'Ocultar contraseña'
+                : 'Mostrar contraseña'"
+              (click)="showPassword = !showPassword">
+
+              <lucide-icon
+                [img]="showPassword ? EyeOffIcon : EyeIcon"
+                [size]="19">
+              </lucide-icon>
+
+            </button>
+
+          </div>
+
+          <small class="field-hint">
+
+            Debe contener exactamente 8 caracteres,
+            incluyendo una mayúscula, una minúscula,
+            un número y un carácter especial.
+
+          </small>
+
+          <small class="field-hint" *ngIf="editingUser">
+
+            Deja este campo vacío para conservar
+            la contraseña actual.
+
+          </small>
+
+          <small
+            class="field-error"
+            *ngIf="userForm.controls.password.invalid &&
+                   userForm.controls.password.touched">
+
+            La contraseña no cumple con los requisitos.
+
+          </small>
+
+        </div>
+
+        <!-- ROL -->
+
+        <div class="form-group">
+
+          <label for="user-role">Rol</label>
+
+          <select
+            id="user-role"
+            formControlName="role"
+            data-testid="user-role">
+
+            <option value="USER">Usuario</option>
+            <option value="ADMIN">Administrador</option>
+
+          </select>
+
+        </div>
+
+        <div
+          class="notification error"
+          role="alert"
+          data-testid="modal-error"
+          *ngIf="modalError">
+
+          {{ modalError }}
+
+        </div>
+
+      </div>
+
+      <div class="modal-footer">
+
+        <button
+          type="button"
+          class="btn secondary"
+          [disabled]="saving"
+          (click)="closeModal()">
+
+          Cancelar
+
+        </button>
+
+        <button
+          type="submit"
+          class="btn primary"
+          data-testid="save-user"
+          [disabled]="saving">
+
+          {{ saving
+              ? 'Guardando...'
+              : editingUser
+                ? 'Guardar cambios'
+                : 'Registrar usuario' }}
+
+        </button>
+
+      </div>
+
+    </form>
+
+  </section>
+
+</div>
+
+<!-- CONFIRMACIÓN DE ELIMINACIÓN Y ESTADO -->
+
+<div
+  class="modal-overlay"
+  *ngIf="showDeleteModal || showStatusModal">
+
+  <section
+    class="modal confirmation-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="confirmation-title"
+    data-testid="confirmation-modal">
+
+    <div
+      class="confirmation-icon"
+      [class.danger]="showDeleteModal">
+
+      <lucide-icon
+        [img]="showDeleteModal ? DeleteIcon : PowerIcon"
+        [size]="30">
+      </lucide-icon>
+
+    </div>
+
+    <h2 id="confirmation-title">
+
+      {{ showDeleteModal
+          ? 'Eliminar usuario'
+          : selectedUser?.active
+            ? 'Desactivar usuario'
+            : 'Activar usuario' }}
+
+    </h2>
+
+    <p>
+
+      ¿Estás seguro de que deseas
+
+      {{ showDeleteModal
+          ? 'eliminar'
+          : selectedUser?.active
+            ? 'desactivar'
+            : 'activar' }}
+
+      a <strong>{{ selectedUser?.name }}</strong>?
+
+    </p>
+
+    <p class="warning-text" *ngIf="showDeleteModal">
+      Esta acción no se puede deshacer.
+    </p>
+
+    <div
+      class="notification error"
+      role="alert"
+      *ngIf="modalError">
+
+      {{ modalError }}
+
+    </div>
+
+    <div class="confirmation-actions">
+
+      <button
+        class="btn secondary"
+        [disabled]="saving"
+        (click)="closeConfirmation()">
+
+        Cancelar
+
+      </button>
+
+      <button
+        class="btn"
+        [class.danger-button]="showDeleteModal"
+        [class.primary]="!showDeleteModal"
+        data-testid="confirm-action"
+        [disabled]="saving"
+        (click)="showDeleteModal
+          ? confirmDelete()
+          : confirmStatus()">
+
+        {{ saving
+            ? 'Procesando...'
+            : 'Confirmar' }}
+
+      </button>
+
+    </div>
+
+  </section>
+
+</div>
