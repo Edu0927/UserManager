@@ -34,3 +34,4 @@ coverage/
 # IDE
 .idea/
 .vscode/
+jest-results/
