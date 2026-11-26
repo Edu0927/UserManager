@@ -1,0 +1,29 @@
+services:
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.120.0
+    container_name: usermanager-otel-collector
+    restart: unless-stopped
+
+    network_mode: host
+
+    env_file:
+      - ../openobserve/.env
+
+    environment:
+      GOMEMLIMIT: 90MiB
+
+    command:
+      - "--config=/etc/otelcol/config.yml"
+
+    volumes:
+      - ./otel-collector-config.yml:/etc/otelcol/config.yml:ro
+      - /:/hostfs:ro
+
+    mem_limit: 128m
+    cpus: 0.5
+
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 
 import org.slf4j.MDC;
+import org.slf4j.spi.LoggingEventBuilder;
 import org.springframework.stereotype.Component;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -56,7 +57,7 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
         } finally {
 
             long responseTime = TimeUnit.NANOSECONDS.toMillis(
-                System.nanoTime() - startTime
+                    System.nanoTime() - startTime
             );
 
             int statusCode = failed
@@ -67,41 +68,41 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
                     ? "FAILED"
                     : "SUCCESS";
 
-            String message =
-                    "timestamp={} service={} action={} method={} " +
-                    "endpoint={} statusCode={} responseTimeMs={} " +
-                    "requestId={} status={}";
-
-            Object[] values = {
-                    Instant.now(),
-                    "usermanager-backend",
-                    action,
-                    method,
-                    endpoint,
-                    statusCode,
-                    responseTime,
-                    requestId,
-                    status
-            };
-
             try {
+
+                LoggingEventBuilder event;
 
                 if (statusCode >= 500) {
 
-                    log.error(message, values);
+                    event = log.atError();
 
                 } else if (statusCode >= 400) {
 
-                    log.warn(message, values);
+                    event = log.atWarn();
 
                 } else {
 
-                    log.info(message, values);
+                    event = log.atInfo();
+
                 }
+
+                event
+                    .addKeyValue("timestamp", Instant.now().toString())
+                    .addKeyValue("service", "usermanager-backend")
+                    .addKeyValue("event_type", "HTTP_REQUEST")
+                    .addKeyValue("action", action)
+                    .addKeyValue("method", method)
+                    .addKeyValue("endpoint", endpoint)
+                    .addKeyValue("status_code", statusCode)
+                    .addKeyValue("response_time_ms", responseTime)
+                    .addKeyValue("request_id", requestId)
+                    .addKeyValue("status", status)
+                    .log("HTTP request completed");
 
             } finally {
 
                 MDC.remove("requestId");
+
             }
         }
     }
@@ -110,6 +111,10 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
 
         if (endpoint.equals("/api/auth/login")) {
             return "LOGIN";
+        }
+
+        if (endpoint.equals("/api/health")) {
+            return "HEALTH_CHECK";
         }
 
         if (endpoint.startsWith("/actuator")) {

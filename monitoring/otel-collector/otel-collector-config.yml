@@ -1,0 +1,105 @@
+extensions:
+  basicauth/openobserve:
+    client_auth:
+      username: ${env:ZO_ROOT_USER_EMAIL}
+      password: ${env:ZO_ROOT_USER_PASSWORD}
+
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 127.0.0.1:4317
+      http:
+        endpoint: 172.18.0.1:4318
+
+  hostmetrics:
+    collection_interval: 60s
+    root_path: /hostfs
+
+    scrapers:
+      cpu:
+        metrics:
+          system.cpu.time:
+            enabled: true
+          system.cpu.utilization:
+            enabled: true
+
+      memory:
+        metrics:
+          system.memory.usage:
+            enabled: true
+          system.memory.utilization:
+            enabled: true
+
+      disk:
+
+      filesystem:
+        metrics:
+          system.filesystem.usage:
+            enabled: true
+          system.filesystem.utilization:
+            enabled: true
+
+      network:
+        metrics:
+          system.network.io:
+            enabled: true
+
+      load:
+
+      paging:
+        metrics:
+          system.paging.usage:
+            enabled: true
+          system.paging.utilization:
+            enabled: true
+
+processors:
+  memory_limiter:
+    check_interval: 5s
+    limit_mib: 100
+    spike_limit_mib: 20
+
+  batch:
+    timeout: 10s
+    send_batch_size: 256
+    send_batch_max_size: 512
+
+  resource:
+    attributes:
+      - key: host.name
+        value: UserManager-Server
+        action: insert
+
+exporters:
+  otlphttp/openobserve:
+    endpoint: http://127.0.0.1:5080/api/default
+
+    auth:
+      authenticator: basicauth/openobserve
+
+    headers:
+      stream-name: usermanager_telemetry
+
+    sending_queue:
+      queue_size: 100
+
+service:
+  extensions:
+    - basicauth/openobserve
+
+  pipelines:
+    logs:
+      receivers: [otlp]
+      processors: [memory_limiter, resource, batch]
+      exporters: [otlphttp/openobserve]
+
+    metrics:
+      receivers: [otlp, hostmetrics]
+      processors: [memory_limiter, resource, batch]
+      exporters: [otlphttp/openobserve]
+
+    traces:
+      receivers: [otlp]
+      processors: [memory_limiter, resource, batch]
+      exporters: [otlphttp/openobserve]

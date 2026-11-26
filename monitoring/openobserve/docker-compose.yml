@@ -1,0 +1,36 @@
+services:
+  openobserve:
+    image: public.ecr.aws/zinclabs/openobserve:latest
+    container_name: usermanager-openobserve
+    restart: unless-stopped
+
+    ports:
+      - "127.0.0.1:5080:5080"
+
+    environment:
+      ZO_ROOT_USER_EMAIL: ${ZO_ROOT_USER_EMAIL}
+      ZO_ROOT_USER_PASSWORD: ${ZO_ROOT_USER_PASSWORD}
+      ZO_DATA_DIR: /data
+      ZO_LOCAL_MODE: "true"
+      ZO_SMTP_ENABLED: "true"
+      ZO_SMTP_HOST: smtp.gmail.com
+      ZO_SMTP_PORT: "587"
+      ZO_SMTP_USER_NAME: ${ZO_SMTP_USER_NAME}
+      ZO_SMTP_PASSWORD: ${ZO_SMTP_PASSWORD}
+      ZO_SMTP_FROM_EMAIL: ${ZO_SMTP_USER_NAME}
+      ZO_SMTP_ENCRYPTION: starttls
+
+    volumes:
+      - openobserve-data:/data
+
+    mem_limit: 512m
+    cpus: 1.0
+
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  openobserve-data:

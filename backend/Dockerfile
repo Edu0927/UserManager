@@ -17,7 +17,14 @@ FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 
 RUN apk add --no-cache curl libstdc++ \
-    && mkdir -p /app/database /app/logs
+    && mkdir -p /app/database /app/logs /app/otel
+
+# OpenTelemetry Java Agent
+ARG OTEL_AGENT_VERSION=2.14.0
+
+RUN curl -fSL --retry 3 \
+    https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/v${OTEL_AGENT_VERSION}/opentelemetry-javaagent.jar \
+    -o /app/otel/opentelemetry-javaagent.jar
 
 COPY --from=build /app/target/*.jar app.jar
 

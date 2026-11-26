@@ -2,6 +2,7 @@ services:
 
   backend:
     container_name: usermanager-backend
+
     build:
       context: ./backend
       dockerfile: Dockerfile
@@ -13,6 +14,35 @@ services:
       ADMIN_EMAIL: ${ADMIN_EMAIL}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD}
       SPRING_DATASOURCE_URL: jdbc:sqlite:/app/database/usermanager.db
+
+      # Configuracion de memoria Java
+      JAVA_TOOL_OPTIONS: "-Xms64m -Xmx192m -javaagent:/app/otel/opentelemetry-javaagent.jar"
+
+      # OpenTelemetry
+      OTEL_SERVICE_NAME: usermanager-backend
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://172.18.0.1:4318
+      OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
+
+      # Exportacion de telemetria
+      OTEL_TRACES_EXPORTER: otlp
+      OTEL_METRICS_EXPORTER: otlp
+      OTEL_LOGS_EXPORTER: otlp
+
+      # Intervalos de exportacion
+      OTEL_METRIC_EXPORT_INTERVAL: "60000"
+      OTEL_BSP_SCHEDULE_DELAY: "5000"
+
+      # Informacion del servicio
+      OTEL_RESOURCE_ATTRIBUTES: deployment.environment.name=production,service.version=1.0.0
+
+      # Instrumentacion
+      OTEL_INSTRUMENTATION_JDBC_ENABLED: "true"
+      OTEL_INSTRUMENTATION_LOGBACK_APPENDER_ENABLED: "true"
+      OTEL_INSTRUMENTATION_LOGBACK_MDC_ENABLED: "true"
+
+      # Logs estructurados
+      OTEL_INSTRUMENTATION_LOGBACK_APPENDER_EXPERIMENTAL_CAPTURE_KEY_VALUE_PAIR_ATTRIBUTES: "true"
+      OTEL_INSTRUMENTATION_LOGBACK_APPENDER_EXPERIMENTAL_CAPTURE_MDC_ATTRIBUTES: "requestId"
 
     volumes:
       - ./database:/app/database

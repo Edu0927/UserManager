@@ -23,9 +23,13 @@ logs/
 
 # Reportes de pruebas
 jest-report/
+jest-results/
 playwright-report/
 test-results/
 coverage/
+
+# Archivos de respaldo
+*.bak
 
 # Credenciales AWS
 *.pem
@@ -34,4 +38,3 @@ coverage/
 # IDE
 .idea/
 .vscode/
-jest-results/
