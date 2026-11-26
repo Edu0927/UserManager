@@ -1,0 +1,38 @@
+services:
+
+  pipeline:
+
+    container_name: usermanager-pipeline
+
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    restart: unless-stopped
+
+    network_mode: host
+
+    env_file:
+      - ../monitoring/openobserve/.env
+
+    environment:
+      GITHUB_REPOSITORY: Edu0927/UserManager
+      POLL_INTERVAL: "120"
+      OPENOBSERVE_URL: http://127.0.0.1:5080
+      OPENOBSERVE_ORG: default
+      OPENOBSERVE_STREAM: usermanager_pipeline
+
+    volumes:
+      - pipeline-data:/data
+
+    mem_limit: 64m
+    cpus: 0.25
+
+    logging:
+      driver: json-file
+      options:
+        max-size: "5m"
+        max-file: "3"
+
+volumes:
+  pipeline-data:
