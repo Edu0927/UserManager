@@ -19,7 +19,7 @@ describe('LOGIN BACKEND - Jest y Supertest', () => {
         deadline: 10000
       });
 
-    expect(response.status).toBe(200);
+    expect(response.status).toBe(999);
 
     console.log('Backend disponible correctamente.');
   });
